@@ -1,6 +1,10 @@
 import requests
 from fastapi import FastAPI
+
+# from opentelemetry.instrumentation.requests import RequestsInstrumentor
 from pydantic import BaseModel
+
+from mysite.tracing import configure_tracing
 
 app = FastAPI()
 
@@ -20,3 +24,6 @@ def root() -> list[Book]:
     response.raise_for_status()
     data = response.json()
     return [Book(url=book["url"], name=book["name"]) for book in data]
+
+
+configure_tracing(app=app)
