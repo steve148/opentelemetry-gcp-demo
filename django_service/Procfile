@@ -1,0 +1,1 @@
+web: uvicorn mysite.asgi:application

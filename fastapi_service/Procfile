@@ -1,0 +1,1 @@
+web: opentelemetry-instrument --traces_exporter console,otlp --metrics_exporter console --service_name faster --exporter_otlp_endpoint 0.0.0.0:4317 uvicorn main:app --port $PORT --host 0.0.0.0

@@ -1,0 +1,62 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  annotations:
+    run.googleapis.com/ingress: all
+    run.googleapis.com/ingress-status: all
+  labels:
+    cloud.googleapis.com/location: us-central1
+  name: faster
+  namespace: "825024796495"
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/maxScale: "100"
+        run.googleapis.com/client-name: gcloud
+        run.googleapis.com/client-version: 454.0.0
+      labels:
+        client.knative.dev/nonce: mkgtybpsgf
+        run.googleapis.com/startupProbeType: Default
+    spec:
+      containerConcurrency: 80
+      containers:
+        - image: us-central1-docker.pkg.dev/opentelemetry-demo-405200/cloud-run-source-deploy/faster@sha256:0e683b54dbf4df73a3671f7faa541fd652637093bed0fc99a56bc845932ccae3
+          ports:
+            - containerPort: 8080
+              name: http1
+          env:
+            - name: GRPC_VERBOSITY
+              value: debug
+            - name: GRPC_TRACE
+              value: "http,call_error,connectivity_state"
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 512Mi
+          startupProbe:
+            failureThreshold: 1
+            periodSeconds: 240
+            tcpSocket:
+              port: 8080
+            timeoutSeconds: 240
+        - image: us-central1-docker.pkg.dev/opentelemetry-demo-405200/cloud-run-source-deploy/otel-collector-metrics@sha256:24efeca5627fb5ec765ec02dcd21752843663bd297cb6d784cb56d74fcff7b1a
+          name: collector
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 512Mi
+          startupProbe:
+            httpGet:
+              path: /
+              port: 13133
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 13133
+
+      serviceAccountName: 825024796495-compute@developer.gserviceaccount.com
+      timeoutSeconds: 300
+  traffic:
+    - latestRevision: true
+      percent: 100

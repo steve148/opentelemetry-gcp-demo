@@ -1,0 +1,37 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+exporters:
+  debug:
+    verbosity: detailed
+  googlecloud:
+    log:
+      default_log_name: opentelemetry.io/collector-exported-log
+extensions:
+  health_check:
+processors:
+  memory_limiter:
+    check_interval: 10s
+    limit_percentage: 70
+    spike_limit_percentage: 40
+  batch:
+  resourcedetection:
+    detectors: [gcp]
+    timeout: 10s
+service:
+  extensions: [health_check]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, resourcedetection]
+      exporters: [googlecloud, debug]
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, resourcedetection]
+      exporters: [googlecloud, debug]
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, resourcedetection]
+      exporters: [googlecloud, debug]
